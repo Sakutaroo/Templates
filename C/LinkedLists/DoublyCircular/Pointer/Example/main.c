@@ -21,6 +21,6 @@ int main(void) {
     }
     printf("List after:\n");
     display_list(head);
-    delete_list(&head);
+    delete_list(head);
     return 0;
 }

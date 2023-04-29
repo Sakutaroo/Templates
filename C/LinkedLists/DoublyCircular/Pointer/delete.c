@@ -49,16 +49,16 @@ int delete_node_here(list_t **head, list_t *element)
     return 0;
 }
 
-int delete_list(list_t **head)
+int delete_list(list_t *head)
 {
     size_t size = 0;
 
-    if (head == NULL || *head == NULL)
+    if (head == NULL)
         return 84;
-    for (list_t *temp = (*head)->next; *head != temp; temp = temp->next)
+    for (list_t *temp = head->next; head != temp; temp = temp->next)
         size += 1;
     for (size_t i = 0; i < size; i += 1)
-        delete_node_back(head);
-    free(*head);
+        delete_node_back(&head);
+    free(head);
     return 0;
 }
