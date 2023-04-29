@@ -1,0 +1,116 @@
+#!/bin/bash
+
+isFile() {
+  if  [ ! -f "$1" ]
+    then
+      echo "Error: Configuration file '$1' missing."
+      exit 1
+  fi
+}
+
+loadFile() {
+  isFile "$1"
+  n=1
+  while read line
+    do
+      echo -e "$line" >> "$2"
+      n=$((n + 1))
+    done < "$1"
+}
+
+createDirectories() {
+  mkdir src
+  mkdir include
+  mkdir tests
+}
+
+loadGitIgnore() {
+  fileName="$2/Configuration/gitignore"
+  newFile=".gitignore"
+  loadFile "$fileName" "$newFile"
+  echo "$1" >> $newFile
+}
+
+loadMakefileRoot() {
+  fileName="$3/Configuration/Makefile"
+  newFile="Makefile"
+
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" $newFile
+  sed -i "s/%BINARY_NAME/$1/" $newFile
+}
+
+createRoot() {
+  loadGitIgnore "$1" "$3"
+  loadMakefileRoot "$1" "$2" "$3"
+}
+
+loadInclude() {
+  fileName="$3/Configuration/include/%BINARY_NAME.h"
+  newFile="include/$1.h"
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" "$newFile"
+  sed -i "s/%BINARY_NAME/$1/" "$newFile"
+  sed -i "s/%PROJECT_NAME/${1^^}/" "$newFile"
+}
+
+loadMacros() {
+  fileName="$3/Configuration/include/macros.h"
+  newFile="include/macros.h"
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" "$newFile"
+  sed -i "s/%BINARY_NAME/$1/" "$newFile"
+  sed -i "s/%PROJECT_NAME/${1^^}/" "$newFile"
+}
+
+createInclude() {
+  loadInclude "$1" "$2" "$3"
+  loadMacros "$1" "$2" "$3"
+}
+
+loadMain() {
+  fileName="$3/Configuration/src/main.c"
+  newFile="src/main.c"
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" "$newFile"
+  sed -i "s/%BINARY_NAME/$1/" "$newFile"
+}
+
+loadSource() {
+  fileName="$3/Configuration/src/%BINARY_NAME.c"
+  newFile="src/$1.c"
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" "$newFile"
+  sed -i "s/%BINARY_NAME/$1/" "$newFile"
+}
+
+createSource() {
+  loadMain "$1" "$2" "$3"
+  loadSource "$1" "$2" "$3"
+}
+
+loadTests() {
+  fileName="$3/Configuration/tests/test_%BINARY_NAME.c"
+  newFile="tests/test_$1.c"
+  loadFile "$fileName" "$newFile"
+  sed -i "s/%YEAR/$2/" "$newFile"
+  sed -i "s/%BINARY_NAME/$1/" "$newFile"
+}
+
+createFiles() {
+  execPath=$(which stumper)
+  execPath=${execPath%/*}
+  yourDate=$(date "+%Y")
+  createRoot "$1" "$yourDate" "$execPath"
+  createInclude "$1" "$yourDate" "$execPath"
+  createSource "$1" "$yourDate" "$execPath"
+  loadTests "$1" "$yourDate" "$execPath"
+}
+
+if [ $# -ne 1 ]
+  then
+    echo "Just give the name of the binary of your project as an argument."
+    exit 1
+fi
+createDirectories
+createFiles "$1"
