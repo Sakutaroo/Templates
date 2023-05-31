@@ -13,6 +13,7 @@ int delete_node_back(list_t **head)
     (*head)->prev = node->prev;
     node->prev->next = *head;
     free(node);
+    node = NULL;
     return 0;
 }
 
@@ -28,6 +29,7 @@ int delete_node_front(list_t **head)
     (*head)->next = node->next;
     node->next->prev = *head;
     free(node);
+    node = NULL;
     return 0;
 }
 
@@ -46,6 +48,7 @@ int delete_node_here(list_t **head, list_t *element)
         }
     }
     free(element);
+    element = NULL;
     return 0;
 }
 
@@ -60,5 +63,6 @@ int delete_list(list_t *head)
     for (size_t i = 0; i < size; i += 1)
         delete_node_back(&head);
     free(head);
+    head = NULL;
     return 0;
 }
